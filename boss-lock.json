@@ -1,0 +1,14 @@
+{
+	"hash": "d41d8cd98f00b204e9800998ecf8427e",
+	"updated": "2023-02-20T22:17:14.0049154-03:00",
+	"installedModules": {
+		"github.com/coluce/provider": {
+			"name": "provider",
+			"version": "1.2.4",
+			"hash": "c1d5f75148f66fb4aac9ca018b5b78aa",
+			"artifacts": {},
+			"failed": false,
+			"changed": false
+		}
+	}
+}
