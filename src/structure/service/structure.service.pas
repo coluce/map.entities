@@ -3,7 +3,7 @@ unit structure.service;
 interface
 
 uses
-  structure.domain;
+  provider;
 
 type
 
@@ -15,34 +15,11 @@ type
 implementation
 
 uses
-  system.classes,
-  structure.dao;
+  system.classes;
 
 { TStructureService }
 
 class function TStructureService.GetTables: TArray<ITable>;
-
-  procedure FillTableFields(const ATable: ITable);
-  var
-    vField: IField;
-    vStrFields: TStrings;
-    vFieldName: string;
-  begin
-    ATable.Fields.Clear;
-    vStrFields := TStructureDAO.GetFields(ATable.Name);
-    try
-      for vFieldName in vStrFields do
-      begin
-        vField := TStructureDomain.Field
-          .Name(vFieldName)
-          .FieldType('string');
-        ATable.Fields.AddOrSetValue(vField.Name, vField);
-      end;
-    finally
-      vStrFields.Free;
-    end;
-  end;
-
 var
   vTable: ITable;
   vStrTables: TStrings;
@@ -50,14 +27,15 @@ var
 begin
   SetLength(Result, 0);
 
-  vStrTables := TStructureDAO.GetTables;
+  vStrTables := TStringList.Create;
   try
+    TProvider.Firebird.FillTableNames(vStrTables);
     for vTableName in vStrTables do
     begin
       vTable := TStructureDomain.Table
         .Name(vTableName);
 
-      FillTableFields(vTable);
+      TProvider.Firebird.FillFields(vTable);
 
       SetLength(Result, Length(Result) + 1);
       Result[Length(Result) - 1] := vTable;

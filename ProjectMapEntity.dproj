@@ -103,11 +103,7 @@
             <Form>MainView</Form>
             <FormType>dfm</FormType>
         </DCCReference>
-        <DCCReference Include="src\structure\domain\structure.domain.pas"/>
-        <DCCReference Include="src\structure\domain\structure.domain.field.pas"/>
-        <DCCReference Include="src\structure\domain\structure.domain.table.pas"/>
         <DCCReference Include="src\structure\service\structure.service.pas"/>
-        <DCCReference Include="src\structure\dao\structure.dao.pas"/>
         <DCCReference Include="src\source\source.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>

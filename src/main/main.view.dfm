@@ -77,7 +77,6 @@ object MainView: TMainView
     Align = alLeft
     ItemHeight = 13
     TabOrder = 3
-    ExplicitLeft = 199
   end
   object edtSource: TSynEdit
     AlignWithMargins = True
@@ -107,6 +106,7 @@ object MainView: TMainView
     Highlighter = SynPasSyn1
     Lines.Strings = (
       'edtSource')
+    WantTabs = True
     FontSmoothing = fsmNone
   end
   object SynPasSyn1: TSynPasSyn

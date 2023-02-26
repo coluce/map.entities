@@ -4,8 +4,8 @@
 	"installedModules": {
 		"github.com/coluce/provider": {
 			"name": "provider",
-			"version": "1.2.4",
-			"hash": "c1d5f75148f66fb4aac9ca018b5b78aa",
+			"version": "1.3.0",
+			"hash": "3492192e8c780b4ded3003e57abf8e07",
 			"artifacts": {},
 			"failed": false,
 			"changed": false
