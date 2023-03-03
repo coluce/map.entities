@@ -6,7 +6,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, SynEdit, Vcl.ExtCtrls, Vcl.ComCtrls,
   Vcl.StdCtrls, provider, system.generics.collections, SynEditHighlighter,
-  SynHighlighterPas;
+  SynHighlighterPas, Vcl.WinXCtrls, System.Actions, Vcl.ActnList;
 
 type
   TMainView = class(TForm)
@@ -19,14 +19,28 @@ type
     edtSource: TSynEdit;
     btnFillTables: TButton;
     SynPasSyn1: TSynPasSyn;
+    pnlTables: TPanel;
+    srchTable: TSearchBox;
+    pnlSource: TPanel;
+    pnlSourceToolbar: TPanel;
+    btnSourceGenerator: TButton;
+    aclSource: TActionList;
+    acnSourceGenerate: TAction;
+    cbbClassType: TComboBox;
     procedure btnFillTablesClick(Sender: TObject);
     procedure lstTablesDblClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure srchTableInvokeSearch(Sender: TObject);
+    procedure acnSourceGenerateExecute(Sender: TObject);
   private
     { Private declarations }
     FTables: TDictionary<string, ITable>;
-    procedure GetTables;
+    FTableSelected: ITable;
+    procedure DoLoadTables;
+    procedure DrawTables;
+    procedure DoSourceGenerate;
+    procedure DoDrawFields;
   public
     { Public declarations }
   end;
@@ -43,18 +57,18 @@ uses
 {$R *.dfm}
 
 
+procedure TMainView.acnSourceGenerateExecute(Sender: TObject);
+begin
+  DoSourceGenerate;
+end;
+
 procedure TMainView.btnFillTablesClick(Sender: TObject);
-var
-  vItem: ITable;
 begin
   lstTables.Clear;
   lstFields.Clear;
 
-  GetTables;
-  for vItem in FTables.Values do
-  begin
-    lstTables.Items.Add(vItem.Name);
-  end;
+  DoLoadTables;
+  DrawTables;
 
 end;
 
@@ -69,14 +83,13 @@ begin
   FTables.Free;
 end;
 
-procedure TMainView.GetTables;
+procedure TMainView.DoLoadTables;
 var
   vTable: ITable;
   vTables: TArray<ITable>;
 begin
   FTables.Clear;
   FTables.TrimExcess;
-
   vTables := TStructureService.GetTables;
   for vTable in vTables do
   begin
@@ -84,28 +97,59 @@ begin
   end;
 end;
 
-procedure TMainView.lstTablesDblClick(Sender: TObject);
+procedure TMainView.DoSourceGenerate;
+begin
+  case cbbClassType.ItemIndex of
+    0: edtSource.Lines.Text := TSource.Generator.SetTable(FTableSelected).Builder.MainClass;
+    1: edtSource.Lines.Text := TSource.Generator.SetTable(FTableSelected).Builder.EntityClass;
+    2: edtSource.Lines.Text := TSource.Generator.SetTable(FTableSelected).Builder.DAOClass;
+  end;
+end;
+
+procedure TMainView.DoDrawFields;
 var
-  vTable: ITable;
   vField: IField;
-  vSource: TStrings;
+begin
+  for vField in FTableSelected.Fields.Values do
+  begin
+    lstFields.Items.Add(vField.Name + ' | ' + LowerCase(vField.FieldType));
+  end;
+end;
+
+procedure TMainView.DrawTables;
+var
+  vItem: ITable;
+  vFilter:  string;
+begin
+  lstTables.Clear;
+
+  vFilter := Trim(srchTable.Text);
+  for vItem in FTables.Values do
+  begin
+    if
+      vFilter.IsEmpty or
+      vItem.Name.Contains(vFilter)
+    then
+      lstTables.Items.Add(vItem.Name);
+  end;
+
+end;
+
+procedure TMainView.lstTablesDblClick(Sender: TObject);
 begin
   lstFields.Clear;
   edtSource.Lines.Clear;
-  if FTables.TryGetValue(lstTables.Items[lstTables.ItemIndex], vTable) then
+  FTableSelected :=  nil;
+  if FTables.TryGetValue(lstTables.Items[lstTables.ItemIndex], FTableSelected) then
   begin
-    for vField in vTable.Fields.Values do
-    begin
-      lstFields.Items.Add(vField.Name + ' | ' + LowerCase(vField.FieldType));
-    end;
-
-    vSource := TSource.CreateEntityClass(vTable);
-    try
-      edtSource.Lines.Text := vSource.Text;
-    finally
-      vSource.Free;
-    end;
+    DoSourceGenerate;
+    DoDrawFields;
   end;
+end;
+
+procedure TMainView.srchTableInvokeSearch(Sender: TObject);
+begin
+  DrawTables;
 end;
 
 end.
