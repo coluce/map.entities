@@ -38,7 +38,6 @@ end;
 function TSourceBuilder.DAOClass: string;
 var
   vSource: TStrings;
-  vField: IField;
 begin
 
   vSource := TStringList.Create;
