@@ -35,7 +35,6 @@ object MainView: TMainView
     Width = 1023
     Height = 19
     Panels = <>
-    ExplicitWidth = 637
   end
   object lstFields: TListBox
     AlignWithMargins = True
@@ -46,8 +45,6 @@ object MainView: TMainView
     Align = alLeft
     ItemHeight = 13
     TabOrder = 1
-    ExplicitLeft = 234
-    ExplicitTop = 41
   end
   object pnlTables: TPanel
     Left = 0
@@ -57,7 +54,6 @@ object MainView: TMainView
     Align = alLeft
     BevelOuter = bvNone
     TabOrder = 2
-    ExplicitTop = 35
     object srchTable: TSearchBox
       AlignWithMargins = True
       Left = 3
@@ -67,9 +63,6 @@ object MainView: TMainView
       Align = alTop
       TabOrder = 0
       OnInvokeSearch = srchTableInvokeSearch
-      ExplicitLeft = 24
-      ExplicitTop = 0
-      ExplicitWidth = 121
     end
     object lstTables: TListBox
       AlignWithMargins = True
@@ -81,9 +74,6 @@ object MainView: TMainView
       ItemHeight = 13
       TabOrder = 1
       OnDblClick = lstTablesDblClick
-      ExplicitTop = 44
-      ExplicitWidth = 190
-      ExplicitHeight = 365
     end
   end
   object pnlHeader: TPanel
@@ -94,9 +84,6 @@ object MainView: TMainView
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 3
-    ExplicitLeft = 1
-    ExplicitTop = 1
-    ExplicitWidth = 223
     object btnFillTables: TButton
       AlignWithMargins = True
       Left = 3
@@ -117,10 +104,6 @@ object MainView: TMainView
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 4
-    ExplicitLeft = 560
-    ExplicitTop = 104
-    ExplicitWidth = 377
-    ExplicitHeight = 241
     object edtSource: TSynEdit
       AlignWithMargins = True
       Left = 3
@@ -151,8 +134,6 @@ object MainView: TMainView
         'edtSource')
       WantTabs = True
       FontSmoothing = fsmNone
-      ExplicitLeft = 442
-      ExplicitHeight = 365
     end
     object pnlSourceToolbar: TPanel
       Left = 0
@@ -162,9 +143,6 @@ object MainView: TMainView
       Align = alTop
       BevelOuter = bvNone
       TabOrder = 1
-      ExplicitLeft = 128
-      ExplicitTop = 64
-      ExplicitWidth = 185
       object btnSourceGenerator: TButton
         AlignWithMargins = True
         Left = 3
@@ -174,15 +152,13 @@ object MainView: TMainView
         Action = acnSourceGenerate
         Align = alLeft
         TabOrder = 0
-        ExplicitLeft = 8
-        ExplicitTop = 16
-        ExplicitHeight = 25
       end
       object cbbClassType: TComboBox
         Left = 88
         Top = 10
         Width = 145
         Height = 21
+        Style = csDropDownList
         ItemIndex = 0
         TabOrder = 1
         Text = 'Main'

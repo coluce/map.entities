@@ -51,7 +51,7 @@ begin
     vSource.Add('');
     vSource.Add('type');
     vSource.Add('');
-    vSource.Add('  ' + FMetadata.DaoClassName + ' = class');
+    vSource.Add('  ' + FMetadata.DaoClassName + ' = class(TInterfacedObject, ' + FMetadata.DaoInterfaceName + ')');
     vSource.Add('  private');
     vSource.Add('    { private declarations }');
     vSource.Add('  public');
@@ -191,6 +191,14 @@ begin
     begin
       vSource.Add('    property ' + vField.Name + ': ' + DatabaseTypeToPascalType(vField) + ' read Get' + vField.Name + ' write Set' + vField.Name + ';');
     end;
+    vSource.Add('  end;');
+    vSource.Add('');
+
+    vSource.Add('  ' + FMetadata.DaoInterfaceName + ' = interface');
+    vSource.Add('    [' + QuotedStr(TGuid.NewGuid.ToString) + ']');
+    vSource.Add('    procedure Save(const Value: ' + FMetadata.EntityInterfaceName + ');');
+    vSource.Add('    procedure Delete(const Value: ' + FMetadata.EntityInterfaceName + ');');
+    vSource.Add('    function Get(const Value: IFilter): TArray<' + FMetadata.EntityInterfaceName + '>;');
     vSource.Add('  end;');
     vSource.Add('');
     vSource.Add('  ' + FMetadata.MainClassName + ' = class');
