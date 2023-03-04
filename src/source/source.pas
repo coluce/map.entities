@@ -8,9 +8,15 @@ uses
 type
 
   TSourceMetadata = record
+
+    MainUnitName: string;
     MainClassName: string;
-    EntityClassName: string;
+
+    EntityUnitName: string;
     EntityInterfaceName: string;
+    EntityClassName: string;
+
+    DaoUnitName: string;
     DaoInterfaceName: string;
     DaoClassName: string;
   end;

@@ -43,7 +43,7 @@ begin
 
   vSource := TStringList.Create;
   try
-    vSource.Add('unit ' + Lowercase(FTable.Name) +'.dao;');
+    vSource.Add('unit ' + FMetadata.DaoUnitName +';');
     vSource.Add('');
     vSource.Add('interface');
     vSource.Add('');
@@ -54,28 +54,26 @@ begin
     vSource.Add('    { private declarations }');
     vSource.Add('  public');
     vSource.Add('    { public declarations }');
-
-    vSource.Add('    procedure Save(const Value: IMyEntity);');
-    vSource.Add('    procedure Delete(const Value: IMyEntity);');
-    vSource.Add('    function Get(const Value: IFilter): TArray<IMyEntity>;');
-
+    vSource.Add('    procedure Save(const Value: ' + FMetadata.EntityInterfaceName + ');');
+    vSource.Add('    procedure Delete(const Value: ' + FMetadata.EntityInterfaceName + ');');
+    vSource.Add('    function Get(const Value: IFilter): TArray<' + FMetadata.EntityInterfaceName + '>;');
     vSource.Add('  end;');
     vSource.Add('');
     vSource.Add('implementation');
     vSource.Add('');
     vSource.Add(' { ' + FMetadata.DaoClassName + ' }');
     vSource.Add('');
-    vSource.Add('procedure ' + FMetadata.DaoClassName + '.Save(const Value: IMyEntity);');
+    vSource.Add('procedure ' + FMetadata.DaoClassName + '.Save(const Value: ' + FMetadata.EntityInterfaceName + ');');
     vSource.Add('begin');
     vSource.Add('  //');
     vSource.Add('end;');
     vSource.Add('');
-    vSource.Add('procedure ' + FMetadata.DaoClassName + '.Delete(const Value: IMyEntity);');
+    vSource.Add('procedure ' + FMetadata.DaoClassName + '.Delete(const Value: ' + FMetadata.EntityInterfaceName + ');');
     vSource.Add('begin');
     vSource.Add('  //');
     vSource.Add('end;');
     vSource.Add('');
-    vSource.Add('function ' + FMetadata.DaoClassName + '.Get(const Value: IFilter): TArray<IMyEntity>;');
+    vSource.Add('function ' + FMetadata.DaoClassName + '.Get(const Value: IFilter): TArray<' + FMetadata.EntityInterfaceName + '>;');
     vSource.Add('begin');
     vSource.Add('  SetLength(Result, 0);');
     vSource.Add('end;');
@@ -97,13 +95,13 @@ begin
 
   vSource := TStringList.Create;
   try
-    vSource.Add('unit ' + Lowercase(FTable.Name) +'.entity;');
+    vSource.Add('unit ' + FMetadata.EntityUnitName +';');
     vSource.Add('');
     vSource.Add('interface');
     vSource.Add('');
     vSource.Add('type');
     vSource.Add('');
-    vSource.Add('  ' + FMetadata.EntityClassName + ' = class');
+    vSource.Add('  ' + FMetadata.EntityClassName + ' = class(TInterfacedObject, ' + FMetadata.EntityInterfaceName + ')');
     vSource.Add('  private');
     vSource.Add('    { private declarations }');
 
@@ -116,7 +114,7 @@ begin
     vSource.Add('    { public declarations }');
     for vField in FTable.Fields.Values do
     begin
-      vSource.Add('    property ' + vField.Name + ': ' + DatabaseTypeToPascalType(vField) + ' read F' + vField.Name + ' write F' + vField.Name + ';');
+      vSource.Add('    property ' + vField.Name + ': ' + DatabaseTypeToPascalType(vField) + ' read Get' + vField.Name + ' write Set' + vField.Name + ';');
     end;
     vSource.Add('  end;');
     vSource.Add('');
@@ -141,11 +139,35 @@ begin
 
   vSource := TStringList.Create;
   try
-    vSource.Add('unit ' + Lowercase(FTable.Name) +'.main;');
+    vSource.Add('unit ' + FMetadata.MainUnitName +';');
     vSource.Add('');
     vSource.Add('interface');
     vSource.Add('');
     vSource.Add('type');
+    vSource.Add('');
+    vSource.Add('  ' + FMetadata.EntityInterfaceName + ' = interface');
+    vSource.Add('    [' + QuotedStr(TGuid.NewGuid.ToString) + ']');
+
+    for vField in FTable.Fields.Values do
+    begin
+      vSource.Add('    F' + vField.Name + ': ' + DatabaseTypeToPascalType(vField) + ';');
+    end;
+
+    for vField in FTable.Fields.Values do
+    begin
+      vSource.Add('    procedure Set' + vField.Name + '(const Value: ' + DatabaseTypeToPascalType(vField) + ');');
+    end;
+
+    for vField in FTable.Fields.Values do
+    begin
+      vSource.Add('    function Get' + vField.Name + ': ' + DatabaseTypeToPascalType(vField) + ';');
+    end;
+
+    for vField in FTable.Fields.Values do
+    begin
+      vSource.Add('    property ' + vField.Name + ': ' + DatabaseTypeToPascalType(vField) + ' read Get' + vField.Name + ' write Set' + vField.Name + ';');
+    end;
+    vSource.Add('  end;');
     vSource.Add('');
     vSource.Add('  ' + FMetadata.MainClassName + ' = class');
     vSource.Add('  private');
@@ -159,7 +181,8 @@ begin
     vSource.Add('implementation');
     vSource.Add('');
     vSource.Add('uses');
-    vSource.Add('');
+    vSource.Add('  ' + FMetadata.EntityUnitName + ',');
+    vSource.Add('  ' + FMetadata.DaoUnitName + ',');
     vSource.Add('');
     vSource.Add(' { ' + FMetadata.MainClassName + ' }');
     vSource.Add('');
