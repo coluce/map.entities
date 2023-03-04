@@ -141,6 +141,7 @@ begin
 
     for vField in vList do
     begin
+
       vItem := FormatFloat('00', vField.ID);
 
       if vField.PrimaryKey then
