@@ -47,6 +47,9 @@ begin
     vSource.Add('');
     vSource.Add('interface');
     vSource.Add('');
+    vSource.Add('uses');
+    vSource.Add('  ' + FMetadata.MainUnitName + ';');
+    vSource.Add('');
     vSource.Add('type');
     vSource.Add('');
     vSource.Add('  ' + FMetadata.DaoClassName + ' = class');
@@ -60,6 +63,9 @@ begin
     vSource.Add('  end;');
     vSource.Add('');
     vSource.Add('implementation');
+    vSource.Add('');
+    vSource.Add('uses');
+    vSource.Add('  provider;');
     vSource.Add('');
     vSource.Add(' { ' + FMetadata.DaoClassName + ' }');
     vSource.Add('');
@@ -99,6 +105,9 @@ begin
     vSource.Add('');
     vSource.Add('interface');
     vSource.Add('');
+    vSource.Add('uses');
+    vSource.Add('  ' + FMetadata.MainUnitName + ';');
+    vSource.Add('');
     vSource.Add('type');
     vSource.Add('');
     vSource.Add('  ' + FMetadata.EntityClassName + ' = class(TInterfacedObject, ' + FMetadata.EntityInterfaceName + ')');
@@ -108,6 +117,12 @@ begin
     for vField in FTable.Fields.Values do
     begin
       vSource.Add('    F' + vField.Name + ': ' + DatabaseTypeToPascalType(vField) + ';');
+    end;
+
+    for vField in FTable.Fields.Values do
+    begin
+      vSource.Add('    procedure Set' + vField.Name + '(const Value: ' + DatabaseTypeToPascalType(vField) + ');');
+      vSource.Add('    function Get' + vField.Name + ': ' + DatabaseTypeToPascalType(vField) + ';');
     end;
 
     vSource.Add('  public');
@@ -121,6 +136,20 @@ begin
     vSource.Add('implementation');
     vSource.Add('');
     vSource.Add(' { ' + FMetadata.EntityClassName + ' }');
+    vSource.Add('');
+
+    for vField in FTable.Fields.Values do
+    begin
+      vSource.Add('procedure ' + FMetadata.EntityClassName + '.Set' + vField.Name + '(const Value: ' + DatabaseTypeToPascalType(vField) + ');');
+      vSource.Add('begin');
+      vSource.Add('  F' + vField.Name + ' := Value;');
+      vSource.Add('end;');
+      vSource.Add('function ' + FMetadata.EntityClassName + '.Get' + vField.Name + ': ' + DatabaseTypeToPascalType(vField) + ';');
+      vSource.Add('begin');
+      vSource.Add('  Result := F' + vField.Name + ';');
+      vSource.Add('end;');
+    end;
+
     vSource.Add('');
     vSource.Add('end.');
 
@@ -156,10 +185,6 @@ begin
     for vField in FTable.Fields.Values do
     begin
       vSource.Add('    procedure Set' + vField.Name + '(const Value: ' + DatabaseTypeToPascalType(vField) + ');');
-    end;
-
-    for vField in FTable.Fields.Values do
-    begin
       vSource.Add('    function Get' + vField.Name + ': ' + DatabaseTypeToPascalType(vField) + ';');
     end;
 
@@ -188,12 +213,12 @@ begin
     vSource.Add('');
     vSource.Add('class function Entity: ' + FMetadata.EntityInterfaceName + ';');
     vSource.Add('begin');
-    vSource.Add('  Result := nil');
+    vSource.Add('  Result := ' + FMetadata.EntityClassName + '.Create;');
     vSource.Add('end;');
     vSource.Add('');
     vSource.Add('class function Dao: ' + FMetadata.DaoInterfaceName + ';');
     vSource.Add('begin');
-    vSource.Add('  Result := nil');
+    vSource.Add('  Result := ' + FMetadata.DaoClassName + '.Create;');
     vSource.Add('end;');
     vSource.Add('');
     vSource.Add('end.');
