@@ -25,6 +25,8 @@ type
 implementation
 
 uses
+  system.generics.collections,
+  System.Generics.Defaults,
   system.sysutils;
 
 { TSourceBuilder }
@@ -38,117 +40,198 @@ end;
 function TSourceBuilder.DAOClass: string;
 var
   vSource: TStrings;
+  vList: TList<IField>;
+  vField: IField;
 begin
 
-  vSource := TStringList.Create;
+  vList := TList<IField>.Create;
   try
-    vSource.Add('unit ' + FMetadata.DaoUnitName +';');
-    vSource.Add('');
-    vSource.Add('interface');
-    vSource.Add('');
-    vSource.Add('uses');
-    vSource.Add('  ' + FMetadata.MainUnitName + ';');
-    vSource.Add('');
-    vSource.Add('type');
-    vSource.Add('');
-    vSource.Add('  ' + FMetadata.DaoClassName + ' = class(TInterfacedObject, ' + FMetadata.DaoInterfaceName + ')');
-    vSource.Add('  private');
-    vSource.Add('    { private declarations }');
-    vSource.Add('  public');
-    vSource.Add('    { public declarations }');
-    vSource.Add('    procedure Save(const Value: ' + FMetadata.EntityInterfaceName + ');');
-    vSource.Add('    procedure Delete(const Value: ' + FMetadata.EntityInterfaceName + ');');
-    vSource.Add('    function Get(const Value: IFilter): TArray<' + FMetadata.EntityInterfaceName + '>;');
-    vSource.Add('  end;');
-    vSource.Add('');
-    vSource.Add('implementation');
-    vSource.Add('');
-    vSource.Add('uses');
-    vSource.Add('  provider;');
-    vSource.Add('');
-    vSource.Add(' { ' + FMetadata.DaoClassName + ' }');
-    vSource.Add('');
-    vSource.Add('procedure ' + FMetadata.DaoClassName + '.Save(const Value: ' + FMetadata.EntityInterfaceName + ');');
-    vSource.Add('var');
-    vSource.Add('  vQry: TStrings;');
-    vSource.Add('begin');
-    vSource.Add('  vQry := TStringList.Create;');
-    vSource.Add('  try');
-    vSource.Add('');
-    vSource.Add('    if Value.ID < 1 then');
-    vSource.Add('      Value.ID(GetNextID);');
-    vSource.Add('');
-    vSource.Add('    vQry.Add(''update or insert into MODULOS ('');');
-    vSource.Add('    vQry.Add(''  ID,'');');
-    vSource.Add('    vQry.Add(''  NOME,'');');
-    vSource.Add('    vQry.Add(''  PROJECTPATH,'');');
-    vSource.Add('    vQry.Add(''  TIPOCOMPILADOR,'');');
-    vSource.Add('    vQry.Add(''  AVISO'');');
-    vSource.Add('    vQry.Add('')values('');');
-    vSource.Add('    vQry.Add(''  :ID,'');');
-    vSource.Add('    vQry.Add(''  :NOME,'');');
-    vSource.Add('    vQry.Add(''  :PROJECTPATH,'');');
-    vSource.Add('    vQry.Add(''  :TIPOCOMPILADOR,'');');
-    vSource.Add('    vQry.Add(''  :AVISO'');');
-    vSource.Add('    vQry.Add('')'');');
-    vSource.Add('    vQry.Add(''matching (ID)'');');
-    vSource.Add('');
-    vSource.Add('    TProvider.Firebird');
-    vSource.Add('      .SetSQL(vQry)');
-    vSource.Add('      .SetIntegerParam(''ID'', Value.ID)');
-    vSource.Add('      .SetStringParam(''NOME'', Value.Name)');
-    vSource.Add('      .SetStringParam(''PROJECTPATH'', Value.ProjectPath)');
-    vSource.Add('      .SetIntegerParam(''TIPOCOMPILADOR'', Ord(Value.Compiler))');
-    vSource.Add('      .SetStringParam(''AVISO'', Value.Warning)');
-    vSource.Add('      .Execute;');
-    vSource.Add('');
-    vSource.Add('  finally');
-    vSource.Add('    vQry.Free;');
-    vSource.Add('  end;');
-    vSource.Add('end;');
-    vSource.Add('');
-    vSource.Add('procedure ' + FMetadata.DaoClassName + '.Delete(const Value: ' + FMetadata.EntityInterfaceName + ');');
-    vSource.Add('begin');
-    vSource.Add('  TProvider.Firebird');
-    vSource.Add('    .SetSQL(''DELETE FROM MODULOS WHERE ID = :ID '')');
-    vSource.Add('    .SetIntegerParam(''ID'', ID)');
-    vSource.Add('    .Execute;');
-    vSource.Add('end;');
-    vSource.Add('');
-    vSource.Add('function ' + FMetadata.DaoClassName + '.Get(const Value: IFilter): TArray<' + FMetadata.EntityInterfaceName + '>;');
-    vSource.Add('var');
-    vSource.Add('  vDataSet: TFDMemTable;');
-    vSource.Add('  vEntity: IModuleEntity;');
-    vSource.Add('begin');
-    vSource.Add('  SetLength(Result, 0);');
-    vSource.Add('');
-    vSource.Add('  vDataSet := TFDMemTable.Create(nil);');
-    vSource.Add('  try');
-    vSource.Add('');
-    vSource.Add('    TProvider.Firebird');
-    vSource.Add('      .SetSQL(''select * from MODULOS order by ID'')');
-    vSource.Add('      .SetDataset(vDataSet)');
-    vSource.Add('      .Open;');
-    vSource.Add('');
-    vSource.Add('    vDataSet.First;');
-    vSource.Add('    while not vDataSet.EOF do');
-    vSource.Add('    begin');
-    vSource.Add('      vEntity := LoadFromDataSet(vDataSet);');
-    vSource.Add('      TModule.Repository.List.AddOrSetValue(vEntity.ID, vEntity);');
-    vSource.Add('      vDataSet.Next;');
-    vSource.Add('    end;');
-    vSource.Add('  finally');
-    vSource.Add('    vDataSet.Free;');
-    vSource.Add('  end;');
-    vSource.Add('');
-    vSource.Add('end;');
-    vSource.Add('');
-    vSource.Add('end.');
 
-    Result := vSource.Text;
+    vList.AddRange(FTable.Fields.Values);
 
+    vList.Sort(TComparer<IField>.Construct(
+      function (const L, R: IField): integer
+      begin
+        if L.ID = R.ID then
+        begin
+          Result := 0;
+        end
+        else
+        begin
+          if L.ID < R.ID then
+          begin
+            Result := -1;
+          end
+          else
+          begin
+            Result := 1;
+          end;
+        end;
+      end
+    ));
+
+    vSource := TStringList.Create;
+    try
+      vSource.Add('unit ' + FMetadata.DaoUnitName +';');
+      vSource.Add('');
+      vSource.Add('interface');
+      vSource.Add('');
+      vSource.Add('uses');
+      vSource.Add('  ' + FMetadata.MainUnitName + ';');
+      vSource.Add('');
+      vSource.Add('type');
+      vSource.Add('');
+      vSource.Add('  ' + FMetadata.DaoClassName + ' = class(TInterfacedObject, ' + FMetadata.DaoInterfaceName + ')');
+      vSource.Add('  private');
+      vSource.Add('    { private declarations }');
+      vSource.Add('  public');
+      vSource.Add('    { public declarations }');
+      vSource.Add('    procedure Save(const Value: ' + FMetadata.EntityInterfaceName + ');');
+      vSource.Add('    procedure Delete(const Value: ' + FMetadata.EntityInterfaceName + ');');
+      vSource.Add('    function Get(const Value: IFilter): TArray<' + FMetadata.EntityInterfaceName + '>;');
+      vSource.Add('  end;');
+      vSource.Add('');
+      vSource.Add('implementation');
+      vSource.Add('');
+      vSource.Add('uses');
+      vSource.Add('  provider;');
+      vSource.Add('');
+      vSource.Add(' { ' + FMetadata.DaoClassName + ' }');
+      vSource.Add('');
+      vSource.Add('procedure ' + FMetadata.DaoClassName + '.Save(const Value: ' + FMetadata.EntityInterfaceName + ');');
+      vSource.Add('var');
+      vSource.Add('  vQry: TStrings;');
+      vSource.Add('begin');
+      vSource.Add('  vQry := TStringList.Create;');
+      vSource.Add('  try');
+      vSource.Add('');
+      vSource.Add('    if Value.ID < 1 then');
+      vSource.Add('      Value.ID(GetNextID);');
+      vSource.Add('');
+      vSource.Add('    vQry.Add(''update or insert into ' + FTable.Name + ' ('');');
+      for vField in vList do
+      begin
+        vSource.Add('    vQry.Add(''  ' + vField.Name + ','');');
+      end;
+      vSource.Add('    vQry.Add('')values('');');
+      for vField in vList do
+      begin
+        vSource.Add('    vQry.Add(''  :' + vField.Name + ','');');
+      end;
+      vSource.Add('    vQry.Add('')'');');
+      vSource.Add('    vQry.Add(''matching (ID)'');');
+      vSource.Add('');
+      vSource.Add('    TProvider.Firebird');
+      vSource.Add('      .SetSQL(vQry)');
+      for vField in vList do
+      begin
+        { TODO : converter tipo do banco para tipo de parametro }
+        vSource.Add('      .SetIntegerParam('+ QuotedStr(vField.Name) +', Value.' + vField.Name + ')');
+      end;
+      vSource.Add('      .Execute;');
+      vSource.Add('');
+      vSource.Add('  finally');
+      vSource.Add('    vQry.Free;');
+      vSource.Add('  end;');
+      vSource.Add('end;');
+      vSource.Add('');
+      vSource.Add('procedure ' + FMetadata.DaoClassName + '.Delete(const Value: ' + FMetadata.EntityInterfaceName + ');');
+      vSource.Add('var');
+      vSource.Add('  vSQL: TStrings;');
+      vSource.Add('begin');
+      vSource.Add('  vSQL := TStringList.Create;');
+      vSource.Add('  try');
+      vSource.Add('    vSQL.Add(''delete from ' + FTable.Name + ' where'');');
+
+      for vField in vList do
+      begin
+        if vField.PrimaryKey then
+        begin
+          { TODO : converter tipo do banco para tipo de parametro }
+          vSource.Add('    vSQL.Add('' ' + vField.Name + ' = :' + vField.Name +''');');
+        end;
+      end;
+
+      vSource.Add('    TProvider.Firebird');
+      vSource.Add('      .SetSQL(vSQL)');
+
+      for vField in vList do
+      begin
+        if vField.PrimaryKey then
+        begin
+          { TODO : converter tipo do banco para tipo de parametro }
+          vSource.Add('      .SetIntegerParam('+ QuotedStr(vField.Name) +', Value.' + vField.Name + ')');
+        end;
+      end;
+
+      vSource.Add('      .Execute;');
+      vSource.Add('  finally');
+      vSource.Add('    vSQL.Free;');
+      vSource.Add('  end;');
+      vSource.Add('end;');
+      vSource.Add('');
+      vSource.Add('function ' + FMetadata.DaoClassName + '.Get(const Value: IFilter): TArray<' + FMetadata.EntityInterfaceName + '>;');
+      vSource.Add('var');
+      vSource.Add('  vDataSet: TFDMemTable;');
+      vSource.Add('  vEntity: ' + FMetadata.EntityInterfaceName + ';');
+      vSource.Add('  vSQL: TStrings;');
+      vSource.Add('begin');
+      vSource.Add('  SetLength(Result, 0);');
+      vSource.Add('');
+      vSource.Add('  vDataSet := TFDMemTable.Create(nil);');
+      vSource.Add('  try');
+      vSource.Add('    vSQL := TStringList.Create;');
+      vSource.Add('    try');
+      vSource.Add('      vSQL.Add(''select * from ' + FTable.Name + ' where'');');
+      vSource.Add('      // todo: tratar filter');
+      for vField in vList do
+      begin
+        if vField.PrimaryKey then
+        begin
+          { TODO : converter tipo do banco para tipo de parametro }
+          vSource.Add('      vSQL.Add('' ' + vField.Name + ' = :' + vField.Name +''');');
+        end;
+      end;
+      vSource.Add('');
+      vSource.Add('      TProvider.Firebird');
+      vSource.Add('        .SetSQL(vSQL)');
+      vSource.Add('        .SetDataset(vDataSet)');
+      for vField in vList do
+      begin
+        if vField.PrimaryKey then
+        begin
+          { TODO : converter tipo do banco para tipo de parametro }
+          vSource.Add('        .SetIntegerParam('+ QuotedStr(vField.Name) +', Value.' + vField.Name + ')');
+        end;
+      end;
+      vSource.Add('        .Open;');
+      vSource.Add('');
+      vSource.Add('      vDataSet.First;');
+      vSource.Add('      while not vDataSet.EOF do');
+      vSource.Add('      begin');
+      vSource.Add('        vEntity := LoadFromDataSet(vDataSet);');
+      vSource.Add('        SetLength(Result, Length(Result) + 1);');
+      vSource.Add('        Result[Length(Result) - 1] := vEntity;');
+      vSource.Add('        vDataSet.Next;');
+      vSource.Add('      end;');
+      vSource.Add('    finally');
+      vSource.Add('      vDataSet.Free;');
+      vSource.Add('    end;');
+      vSource.Add('  finally');
+      vSource.Add('    vDataSet.Free;');
+      vSource.Add('  end;');
+      vSource.Add('');
+      vSource.Add('end;');
+      vSource.Add('');
+      vSource.Add('end.');
+
+      Result := vSource.Text;
+
+    finally
+      vSource.Free;
+    end;
   finally
-    vSource.Free;
+    vList.Free;
   end;
 end;
 
