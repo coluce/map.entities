@@ -1,4 +1,4 @@
-unit main.view;
+﻿unit main.view;
 
 interface
 
@@ -51,6 +51,7 @@ var
 implementation
 
 uses
+  System.Generics.Defaults,
   structure.service,
   source;
 
@@ -109,10 +110,52 @@ end;
 procedure TMainView.DoDrawFields;
 var
   vField: IField;
+  vItem: string;
+  vList: TList<IField>;
 begin
-  for vField in FTableSelected.Fields.Values do
-  begin
-    lstFields.Items.Add(vField.Name + ' | ' + LowerCase(vField.FieldType));
+  vList := TList<IField>.Create;
+  try
+
+    vList.AddRange(FTableSelected.Fields.Values);
+
+    vList.Sort(TComparer<IField>.Construct(
+      function (const L, R: IField): integer
+      begin
+        if L.ID = R.ID then
+        begin
+          Result := 0;
+        end
+        else
+        begin
+          if L.ID < R.ID then
+          begin
+            Result := -1;
+          end
+          else
+          begin
+            Result := 1;
+          end;
+        end;
+      end
+    ));
+
+    for vField in vList do
+    begin
+      vItem := FormatFloat('00', vField.ID);
+
+      if vField.PrimaryKey then
+        vItem := vItem + ' 🔑 '
+      else
+        vItem := vItem + ' 🗄 ';
+
+      vItem := vItem + vField.Name + ' | ' + LowerCase(vField.FieldType);
+
+      lstFields.Items.Add(vItem);
+
+    end;
+
+  finally
+    vList.Free;
   end;
 end;
 

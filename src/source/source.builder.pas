@@ -75,6 +75,10 @@ begin
     vSource.Add('');
     vSource.Add('procedure ' + FMetadata.DaoClassName + '.Delete(const Value: ' + FMetadata.EntityInterfaceName + ');');
     vSource.Add('begin');
+    vSource.Add('  //TProvider.Firebird.');
+    vSource.Add('  //');
+    vSource.Add('  //');
+    vSource.Add('  //');
     vSource.Add('  //');
     vSource.Add('end;');
     vSource.Add('');
