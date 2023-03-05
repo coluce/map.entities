@@ -74,8 +74,44 @@ begin
 end;
 
 procedure TMainView.FormCreate(Sender: TObject);
+
+  procedure PrepareFakeData;
+  var
+    vTable: ITable;
+    vField: IField;
+  begin
+    vTable := TStructureDomain.Table;
+    vTable.Name('FC0M000');
+
+    vField := TStructureDomain.Field
+      .ID(1)
+      .Name('ID')
+      .PrimaryKey(True)
+      .FieldType('integer');
+    vTable.Fields.AddOrSetValue(vField.Name, vField);
+
+    vField := TStructureDomain.Field
+      .ID(2)
+      .Name('CDFIL')
+      .PrimaryKey(True)
+      .FieldType('integer');
+    vTable.Fields.AddOrSetValue(vField.Name, vField);
+
+    vField := TStructureDomain.Field
+      .ID(3)
+      .Name('TITULO')
+      .FieldType('varchar');
+    vTable.Fields.AddOrSetValue(vField.Name, vField);
+
+
+    FTables.AddOrSetValue(vTable.Name, vTable);
+
+    DrawTables;
+  end;
+
 begin
   FTables := TDictionary<string, ITable>.Create;
+  PrepareFakeData;
 end;
 
 procedure TMainView.FormDestroy(Sender: TObject);

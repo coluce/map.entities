@@ -85,6 +85,7 @@ begin
       vSource.Add('  ' + FMetadata.DaoClassName + ' = class(TInterfacedObject, ' + FMetadata.DaoInterfaceName + ')');
       vSource.Add('  private');
       vSource.Add('    { private declarations }');
+      vSource.Add('    function CreateEntityFromDataSet(const ADataSet: TDataSet): ' + FMetadata.EntityInterfaceName + ';');
       vSource.Add('  public');
       vSource.Add('    { public declarations }');
       vSource.Add('    procedure Save(const Value: ' + FMetadata.EntityInterfaceName + ');');
@@ -98,6 +99,11 @@ begin
       vSource.Add('  provider;');
       vSource.Add('');
       vSource.Add(' { ' + FMetadata.DaoClassName + ' }');
+      vSource.Add('');
+      vSource.Add('function ' + FMetadata.DaoClassName + '.CreateEntityFromDataSet(const ADataSet: TDataSet): ' + FMetadata.EntityInterfaceName + ';');
+      vSource.Add('begin');
+      vSource.Add('  Result := nil;');
+      vSource.Add('end;');
       vSource.Add('');
       vSource.Add('procedure ' + FMetadata.DaoClassName + '.Save(const Value: ' + FMetadata.EntityInterfaceName + ');');
       vSource.Add('var');
@@ -205,7 +211,7 @@ begin
       vSource.Add('      vDataSet.First;');
       vSource.Add('      while not vDataSet.EOF do');
       vSource.Add('      begin');
-      vSource.Add('        vEntity := LoadFromDataSet(vDataSet);');
+      vSource.Add('        vEntity := CreateEntityFromDataSet(vDataSet);');
       vSource.Add('        SetLength(Result, Length(Result) + 1);');
       vSource.Add('        Result[Length(Result) - 1] := vEntity;');
       vSource.Add('        vDataSet.Next;');
@@ -282,6 +288,7 @@ begin
       vSource.Add('begin');
       vSource.Add('  F' + vField.Name + ' := Value;');
       vSource.Add('end;');
+      vSource.Add('');
       vSource.Add('function ' + FMetadata.EntityClassName + '.Get' + vField.Name + ': ' + DatabaseTypeToPascalType(vField) + ';');
       vSource.Add('begin');
       vSource.Add('  Result := F' + vField.Name + ';');
@@ -421,40 +428,40 @@ function TSourceBuilder.DatabaseTypeToPascalType(const AField: IField): string;
 begin
   Result := AField.FieldType;
 
-  if AField.FieldType.Equals('CHAR') then
+  if UpperCase(AField.FieldType).Equals('CHAR') then
     Result := 'string';
 
-  if AField.FieldType.Equals('VARCHAR') then
+  if UpperCase(AField.FieldType).Equals('VARCHAR') then
     Result := 'string';
 
-  if AField.FieldType.Equals('INTEGER') then
+  if UpperCase(AField.FieldType).Equals('INTEGER') then
     Result := 'integer';
 
-  if AField.FieldType.Equals('SMALLINT') then
+  if UpperCase(AField.FieldType).Equals('SMALLINT') then
     Result := 'integer';
 
-  if AField.FieldType.Equals('TIMESTAMP') then
+  if UpperCase(AField.FieldType).Equals('TIMESTAMP') then
     Result := 'TDateTime';
 
-  if AField.FieldType.Equals('DATE') then
+  if UpperCase(AField.FieldType).Equals('DATE') then
     Result := 'TDate';
 
-  if AField.FieldType.Equals('TIME') then
+  if UpperCase(AField.FieldType).Equals('TIME') then
     Result := 'TTime';
 
-  if AField.FieldType.Equals('NUMERIC') then
+  if UpperCase(AField.FieldType).Equals('NUMERIC') then
     Result := 'double';
 
-  if AField.FieldType.Equals('DECIMAL') then
+  if UpperCase(AField.FieldType).Equals('DECIMAL') then
     Result := 'double';
 
-  if AField.FieldType.Equals('DOUBLE PRECISION') then
+  if UpperCase(AField.FieldType).Equals('DOUBLE PRECISION') then
     Result := 'double';
 
-  if AField.FieldType.Equals('BLOB SUB_TYPE 0') then
+  if UpperCase(AField.FieldType).Equals('BLOB SUB_TYPE 0') then
     Result := 'TMemoryStream';
 
-  if AField.FieldType.Equals('BLOB SUB_TYPE 1') then
+  if UpperCase(AField.FieldType).Equals('BLOB SUB_TYPE 1') then
     Result := 'string';
 
 end;
