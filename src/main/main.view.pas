@@ -13,8 +13,6 @@ type
     lstTables: TListBox;
     pnlHeader: TPanel;
     stat1: TStatusBar;
-    spl1: TSplitter;
-    lstFields: TListBox;
     spl2: TSplitter;
     edtSource: TSynEdit;
     btnFillTables: TButton;
@@ -27,6 +25,8 @@ type
     aclSource: TActionList;
     acnSourceGenerate: TAction;
     cbbClassType: TComboBox;
+    spl3: TSplitter;
+    lstFields: TListBox;
     procedure btnFillTablesClick(Sender: TObject);
     procedure lstTablesDblClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -107,6 +107,9 @@ procedure TMainView.FormCreate(Sender: TObject);
     FTables.AddOrSetValue(vTable.Name, vTable);
 
     DrawTables;
+
+    stat1.Panels[0].Text := 'fake data';
+
   end;
 
 begin
@@ -132,6 +135,7 @@ begin
   begin
     FTables.AddOrSetValue(vTable.Name, vTable);
   end;
+  stat1.Panels[0].Text := 'database data';
 end;
 
 procedure TMainView.DoSourceGenerate;

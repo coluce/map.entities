@@ -14,7 +14,8 @@ type
     FTable: ITable;
     FMetadata: TSourceMetadata;
     function DatabaseTypeToPascalType(const AField: IField): string;
-    function DatabaseTypeToParamType(const AField: IField): string;
+    function DatabaseTypeToProviderParamType(const AField: IField): string;
+    function DatabaseTypeToDataSetParamType(const AField: IField): string;
   public
     constructor Create(const ATable: ITable; AMetadata: TSourceMetadata);
 
@@ -78,6 +79,7 @@ begin
       vSource.Add('interface');
       vSource.Add('');
       vSource.Add('uses');
+      vSource.Add('  Data.DB,');
       vSource.Add('  ' + FMetadata.MainUnitName + ';');
       vSource.Add('');
       vSource.Add('type');
@@ -102,7 +104,13 @@ begin
       vSource.Add('');
       vSource.Add('function ' + FMetadata.DaoClassName + '.CreateEntityFromDataSet(const ADataSet: TDataSet): ' + FMetadata.EntityInterfaceName + ';');
       vSource.Add('begin');
-      vSource.Add('  Result := nil;');
+      vSource.Add('  Result := ' + FMetadata.MainClassName + '.Entity;');
+
+      for vField in vList do
+      begin
+        vSource.Add('  Result.' + vField.Name + '(ADataSet.FieldByname(' + QuotedStr(vField.Name) + ').' + DatabaseTypeToDataSetParamType(vField) + ');');
+      end;
+
       vSource.Add('end;');
       vSource.Add('');
       vSource.Add('procedure ' + FMetadata.DaoClassName + '.Save(const Value: ' + FMetadata.EntityInterfaceName + ');');
@@ -132,7 +140,7 @@ begin
       vSource.Add('      .SetSQL(vQry)');
       for vField in vList do
       begin
-        vSource.Add('      .' + DatabaseTypeToParamType(vField) + '('+ QuotedStr(vField.Name) +', Value.' + vField.Name + ')');
+        vSource.Add('      .' + DatabaseTypeToProviderParamType(vField) + '('+ QuotedStr(vField.Name) +', Value.' + vField.Name + ')');
       end;
       vSource.Add('      .Execute;');
       vSource.Add('');
@@ -164,7 +172,7 @@ begin
       begin
         if vField.PrimaryKey then
         begin
-          vSource.Add('      .' + DatabaseTypeToParamType(vField) + '('+ QuotedStr(vField.Name) +', Value.' + vField.Name + ')');
+          vSource.Add('      .' + DatabaseTypeToProviderParamType(vField) + '('+ QuotedStr(vField.Name) +', Value.' + vField.Name + ')');
         end;
       end;
 
@@ -203,7 +211,7 @@ begin
       begin
         if vField.PrimaryKey then
         begin
-          vSource.Add('        .' + DatabaseTypeToParamType(vField) + '('+ QuotedStr(vField.Name) +', Value.' + vField.Name + ')');
+          vSource.Add('        .' + DatabaseTypeToProviderParamType(vField) + '('+ QuotedStr(vField.Name) +', Value.' + vField.Name + ')');
         end;
       end;
       vSource.Add('        .Open;');
@@ -360,7 +368,7 @@ begin
     vSource.Add('');
     vSource.Add('uses');
     vSource.Add('  ' + FMetadata.EntityUnitName + ',');
-    vSource.Add('  ' + FMetadata.DaoUnitName + ',');
+    vSource.Add('  ' + FMetadata.DaoUnitName + ';');
     vSource.Add('');
     vSource.Add(' { ' + FMetadata.MainClassName + ' }');
     vSource.Add('');
@@ -383,7 +391,7 @@ begin
   end;
 end;
 
-function TSourceBuilder.DatabaseTypeToParamType(const AField: IField): string;
+function TSourceBuilder.DatabaseTypeToProviderParamType(const AField: IField): string;
 begin
   Result := 'SetStringParam';
 
@@ -422,6 +430,47 @@ begin
 
   if AField.FieldType.Equals('BLOB SUB_TYPE 1') then
     Result := 'SetStringParam';
+end;
+
+function TSourceBuilder.DatabaseTypeToDataSetParamType(const AField: IField): string;
+begin
+  Result := 'AsString';
+
+  if UpperCase(AField.FieldType).Equals('CHAR') then
+    Result := 'AsString';
+
+  if UpperCase(AField.FieldType).Equals('VARCHAR') then
+    Result := 'AsString';
+
+  if UpperCase(AField.FieldType).Equals('INTEGER') then
+    Result := 'AsInteger';
+
+  if UpperCase(AField.FieldType).Equals('SMALLINT') then
+    Result := 'AsInteger';
+
+  if UpperCase(AField.FieldType).Equals('TIMESTAMP') then
+    Result := 'AsDateTime';
+
+  if UpperCase(AField.FieldType).Equals('DATE') then
+    Result := 'AsDateTime';
+
+  if UpperCase(AField.FieldType).Equals('TIME') then
+    Result := 'AsDateTime';
+
+  if UpperCase(AField.FieldType).Equals('NUMERIC') then
+    Result := 'double';
+
+  if UpperCase(AField.FieldType).Equals('DECIMAL') then
+    Result := 'AsFloat';
+
+  if UpperCase(AField.FieldType).Equals('DOUBLE PRECISION') then
+    Result := 'AsFloat';
+
+  if UpperCase(AField.FieldType).Equals('BLOB SUB_TYPE 0') then
+    Result := 'AsBlob';
+
+  if UpperCase(AField.FieldType).Equals('BLOB SUB_TYPE 1') then
+    Result := 'AsString';
 end;
 
 function TSourceBuilder.DatabaseTypeToPascalType(const AField: IField): string;

@@ -22,29 +22,15 @@ object MainView: TMainView
     ExplicitLeft = 190
     ExplicitTop = 35
   end
-  object spl1: TSplitter
-    Left = 436
-    Top = 41
-    Height = 371
-    ExplicitLeft = 442
-    ExplicitTop = 47
-  end
   object stat1: TStatusBar
     Left = 0
     Top = 412
     Width = 1023
     Height = 19
-    Panels = <>
-  end
-  object lstFields: TListBox
-    AlignWithMargins = True
-    Left = 231
-    Top = 44
-    Width = 202
-    Height = 365
-    Align = alLeft
-    ItemHeight = 13
-    TabOrder = 1
+    Panels = <
+      item
+        Width = 200
+      end>
   end
   object pnlTables: TPanel
     Left = 0
@@ -53,7 +39,18 @@ object MainView: TMainView
     Height = 371
     Align = alLeft
     BevelOuter = bvNone
-    TabOrder = 2
+    TabOrder = 1
+    ExplicitLeft = 3
+    ExplicitTop = 44
+    object spl3: TSplitter
+      Left = 0
+      Top = 220
+      Width = 225
+      Height = 3
+      Cursor = crVSplit
+      Align = alTop
+      ExplicitTop = 339
+    end
     object srchTable: TSearchBox
       AlignWithMargins = True
       Left = 3
@@ -69,11 +66,25 @@ object MainView: TMainView
       Left = 3
       Top = 30
       Width = 219
-      Height = 338
-      Align = alClient
+      Height = 187
+      Align = alTop
       ItemHeight = 13
       TabOrder = 1
       OnDblClick = lstTablesDblClick
+    end
+    object lstFields: TListBox
+      AlignWithMargins = True
+      Left = 3
+      Top = 226
+      Width = 219
+      Height = 142
+      Align = alClient
+      ItemHeight = 13
+      TabOrder = 2
+      ExplicitLeft = 231
+      ExplicitTop = 44
+      ExplicitWidth = 202
+      ExplicitHeight = 365
     end
   end
   object pnlHeader: TPanel
@@ -83,7 +94,7 @@ object MainView: TMainView
     Height = 41
     Align = alTop
     BevelOuter = bvNone
-    TabOrder = 3
+    TabOrder = 2
     object btnFillTables: TButton
       AlignWithMargins = True
       Left = 3
@@ -97,18 +108,20 @@ object MainView: TMainView
     end
   end
   object pnlSource: TPanel
-    Left = 439
+    Left = 228
     Top = 41
-    Width = 584
+    Width = 795
     Height = 371
     Align = alClient
     BevelOuter = bvNone
-    TabOrder = 4
+    TabOrder = 3
+    ExplicitLeft = 439
+    ExplicitWidth = 584
     object edtSource: TSynEdit
       AlignWithMargins = True
       Left = 3
       Top = 44
-      Width = 578
+      Width = 789
       Height = 324
       Align = alClient
       Font.Charset = DEFAULT_CHARSET
@@ -134,15 +147,17 @@ object MainView: TMainView
         'edtSource')
       WantTabs = True
       FontSmoothing = fsmNone
+      ExplicitWidth = 578
     end
     object pnlSourceToolbar: TPanel
       Left = 0
       Top = 0
-      Width = 584
+      Width = 795
       Height = 41
       Align = alTop
       BevelOuter = bvNone
       TabOrder = 1
+      ExplicitWidth = 584
       object btnSourceGenerator: TButton
         AlignWithMargins = True
         Left = 3
