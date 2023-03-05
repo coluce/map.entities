@@ -14,6 +14,7 @@ type
     FTable: ITable;
     FMetadata: TSourceMetadata;
     function DatabaseTypeToPascalType(const AField: IField): string;
+    function DatabaseTypeToParamType(const AField: IField): string;
   public
     constructor Create(const ATable: ITable; AMetadata: TSourceMetadata);
 
@@ -125,8 +126,7 @@ begin
       vSource.Add('      .SetSQL(vQry)');
       for vField in vList do
       begin
-        { TODO : converter tipo do banco para tipo de parametro }
-        vSource.Add('      .SetIntegerParam('+ QuotedStr(vField.Name) +', Value.' + vField.Name + ')');
+        vSource.Add('      .' + DatabaseTypeToParamType(vField) + '('+ QuotedStr(vField.Name) +', Value.' + vField.Name + ')');
       end;
       vSource.Add('      .Execute;');
       vSource.Add('');
@@ -147,7 +147,6 @@ begin
       begin
         if vField.PrimaryKey then
         begin
-          { TODO : converter tipo do banco para tipo de parametro }
           vSource.Add('    vSQL.Add('' ' + vField.Name + ' = :' + vField.Name +''');');
         end;
       end;
@@ -159,8 +158,7 @@ begin
       begin
         if vField.PrimaryKey then
         begin
-          { TODO : converter tipo do banco para tipo de parametro }
-          vSource.Add('      .SetIntegerParam('+ QuotedStr(vField.Name) +', Value.' + vField.Name + ')');
+          vSource.Add('      .' + DatabaseTypeToParamType(vField) + '('+ QuotedStr(vField.Name) +', Value.' + vField.Name + ')');
         end;
       end;
 
@@ -188,7 +186,6 @@ begin
       begin
         if vField.PrimaryKey then
         begin
-          { TODO : converter tipo do banco para tipo de parametro }
           vSource.Add('      vSQL.Add('' ' + vField.Name + ' = :' + vField.Name +''');');
         end;
       end;
@@ -200,8 +197,7 @@ begin
       begin
         if vField.PrimaryKey then
         begin
-          { TODO : converter tipo do banco para tipo de parametro }
-          vSource.Add('        .SetIntegerParam('+ QuotedStr(vField.Name) +', Value.' + vField.Name + ')');
+          vSource.Add('        .' + DatabaseTypeToParamType(vField) + '('+ QuotedStr(vField.Name) +', Value.' + vField.Name + ')');
         end;
       end;
       vSource.Add('        .Open;');
@@ -378,6 +374,47 @@ begin
   finally
     vSource.Free;
   end;
+end;
+
+function TSourceBuilder.DatabaseTypeToParamType(const AField: IField): string;
+begin
+  Result := 'SetStringParam';
+
+  if AField.FieldType.Equals('CHAR') then
+    Result := 'SetStringParam';
+
+  if AField.FieldType.Equals('VARCHAR') then
+    Result := 'SetStringParam';
+
+  if AField.FieldType.Equals('INTEGER') then
+    Result := 'SetIntegerParam';
+
+  if AField.FieldType.Equals('SMALLINT') then
+    Result := 'SetIntegerParam';
+
+  if AField.FieldType.Equals('TIMESTAMP') then
+    Result := 'SetDateTimeParam';
+
+  if AField.FieldType.Equals('DATE') then
+    Result := 'SetDateParam';
+
+  if AField.FieldType.Equals('TIME') then
+    Result := 'SetTimeParam';
+
+  if AField.FieldType.Equals('NUMERIC') then
+    Result := 'SetFloatParam';
+
+  if AField.FieldType.Equals('DECIMAL') then
+    Result := 'SetFloatParam';
+
+  if AField.FieldType.Equals('DOUBLE PRECISION') then
+    Result := 'SetFloatParam';
+
+  if AField.FieldType.Equals('BLOB SUB_TYPE 0') then
+    Result := 'SetMemoryStreamParam';
+
+  if AField.FieldType.Equals('BLOB SUB_TYPE 1') then
+    Result := 'SetStringParam';
 end;
 
 function TSourceBuilder.DatabaseTypeToPascalType(const AField: IField): string;
