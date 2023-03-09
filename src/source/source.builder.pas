@@ -29,6 +29,7 @@ implementation
 uses
   system.generics.collections,
   System.Generics.Defaults,
+  system.strutils,
   system.sysutils;
 
 { TSourceBuilder }
@@ -44,6 +45,8 @@ var
   vSource: TStrings;
   vList: TList<IField>;
   vField: IField;
+  vPos: integer;
+  vCountPrimaryKeyFields: integer;
 begin
 
   vList := TList<IField>.Create;
@@ -71,6 +74,15 @@ begin
         end;
       end
     ));
+
+    vCountPrimaryKeyFields := 0;
+    for vField in vList do
+    begin
+      if vField.PrimaryKey then
+      begin
+        inc(vCountPrimaryKeyFields);
+      end;
+    end;
 
     vSource := TStringList.Create;
     try
@@ -117,24 +129,39 @@ begin
       vSource.Add('var');
       vSource.Add('  vQry: TStrings;');
       vSource.Add('begin');
+      vSource.Add('');
       vSource.Add('  vQry := TStringList.Create;');
       vSource.Add('  try');
       vSource.Add('');
-      vSource.Add('    if Value.ID < 1 then');
-      vSource.Add('      Value.ID(GetNextID);');
-      vSource.Add('');
       vSource.Add('    vQry.Add(''update or insert into ' + FTable.Name + ' ('');');
+
+      vPos := 0;
       for vField in vList do
       begin
-        vSource.Add('    vQry.Add(''  ' + vField.Name + ','');');
+        inc(vPos);
+        vSource.Add('    vQry.Add(''  ' + vField.Name + IfThen(vPos < vList.Count, ',', EmptyStr) + ''');');
       end;
       vSource.Add('    vQry.Add('')values('');');
+
+      vPos := 0;
       for vField in vList do
       begin
-        vSource.Add('    vQry.Add(''  :' + vField.Name + ','');');
+        inc(vPos);
+        vSource.Add('    vQry.Add(''  :' + vField.Name + IfThen(vPos < vList.Count, ',', EmptyStr) +''');');
       end;
-      vSource.Add('    vQry.Add('')'');');
-      vSource.Add('    vQry.Add(''matching (ID)'');');
+
+      vSource.Add('    vQry.Add('') matching ('');');
+
+      vPos := 0;
+      for vField in vList do
+      begin
+        if vField.PrimaryKey then
+        begin
+          inc(vPos);
+          vSource.Add('    vSQL.Add('' ' + vField.Name + IfThen(vPos < vCountPrimaryKeyFields, ',', EmptyStr) + ''');');
+        end;
+      end;
+      vSource.Add('    vQry.Add('');'');');
       vSource.Add('');
       vSource.Add('    TProvider.Firebird');
       vSource.Add('      .SetSQL(vQry)');
@@ -147,24 +174,31 @@ begin
       vSource.Add('  finally');
       vSource.Add('    vQry.Free;');
       vSource.Add('  end;');
+      vSource.Add('');
       vSource.Add('end;');
       vSource.Add('');
       vSource.Add('procedure ' + FMetadata.DaoClassName + '.Delete(const Value: ' + FMetadata.EntityInterfaceName + ');');
       vSource.Add('var');
       vSource.Add('  vSQL: TStrings;');
       vSource.Add('begin');
+      vSource.Add('');
       vSource.Add('  vSQL := TStringList.Create;');
       vSource.Add('  try');
-      vSource.Add('    vSQL.Add(''delete from ' + FTable.Name + ' where'');');
-
+      vSource.Add('');
+      vSource.Add('    vSQL.Add(''delete'');');
+      vSource.Add('    vSQL.Add(''from ' + FTable.Name + ' '');');
+      vSource.Add('    vSQL.Add(''where'');');
+      vPos := 0;
       for vField in vList do
       begin
         if vField.PrimaryKey then
         begin
-          vSource.Add('    vSQL.Add('' ' + vField.Name + ' = :' + vField.Name +''');');
+          inc(vPos);
+          vSource.Add('    vSQL.Add('' ' + vField.Name + ' = :' + vField.Name +' ' + IfThen(vPos < vCountPrimaryKeyFields, 'and', EmptyStr) + ' '');');
         end;
       end;
 
+      vSource.Add('');
       vSource.Add('    TProvider.Firebird');
       vSource.Add('      .SetSQL(vSQL)');
 
@@ -177,9 +211,11 @@ begin
       end;
 
       vSource.Add('      .Execute;');
+      vSource.Add('');
       vSource.Add('  finally');
       vSource.Add('    vSQL.Free;');
       vSource.Add('  end;');
+      vSource.Add('');
       vSource.Add('end;');
       vSource.Add('');
       vSource.Add('function ' + FMetadata.DaoClassName + '.Get(const Value: IFilter): TArray<' + FMetadata.EntityInterfaceName + '>;');
@@ -188,21 +224,27 @@ begin
       vSource.Add('  vEntity: ' + FMetadata.EntityInterfaceName + ';');
       vSource.Add('  vSQL: TStrings;');
       vSource.Add('begin');
+      vSource.Add('');
       vSource.Add('  SetLength(Result, 0);');
       vSource.Add('');
       vSource.Add('  vDataSet := TFDMemTable.Create(nil);');
       vSource.Add('  try');
       vSource.Add('    vSQL := TStringList.Create;');
       vSource.Add('    try');
-      vSource.Add('      vSQL.Add(''select * from ' + FTable.Name + ' where'');');
-      vSource.Add('      // todo: tratar filter');
+      vSource.Add('      vSQL.Add(''select * '');');
+      vSource.Add('      vSQL.Add(''from ' + FTable.Name + ' '');');
+      vSource.Add('      vSQL.Add(''where'');');
+
+      vPos := 0;
       for vField in vList do
       begin
         if vField.PrimaryKey then
         begin
-          vSource.Add('      vSQL.Add('' ' + vField.Name + ' = :' + vField.Name +''');');
+          inc(vPos);
+          vSource.Add('      vSQL.Add(''  ' + vField.Name + ' = :' + vField.Name +' ' + IfThen(vPos < vCountPrimaryKeyFields, 'and', EmptyStr) + ' '');');
         end;
       end;
+
       vSource.Add('');
       vSource.Add('      TProvider.Firebird');
       vSource.Add('        .SetSQL(vSQL)');
@@ -211,7 +253,7 @@ begin
       begin
         if vField.PrimaryKey then
         begin
-          vSource.Add('        .' + DatabaseTypeToProviderParamType(vField) + '('+ QuotedStr(vField.Name) +', Value.' + vField.Name + ')');
+          vSource.Add('        .' + DatabaseTypeToProviderParamType(vField) + '('+ QuotedStr(vField.Name) +', Value.ParamByName(' + QuotedStr(vField.Name) + '))');
         end;
       end;
       vSource.Add('        .Open;');
@@ -219,14 +261,20 @@ begin
       vSource.Add('      vDataSet.First;');
       vSource.Add('      while not vDataSet.EOF do');
       vSource.Add('      begin');
+      vSource.Add('');
       vSource.Add('        vEntity := CreateEntityFromDataSet(vDataSet);');
+      vSource.Add('');
       vSource.Add('        SetLength(Result, Length(Result) + 1);');
       vSource.Add('        Result[Length(Result) - 1] := vEntity;');
+      vSource.Add('');
       vSource.Add('        vDataSet.Next;');
+      vSource.Add('');
       vSource.Add('      end;');
+      vSource.Add('');
       vSource.Add('    finally');
       vSource.Add('      vDataSet.Free;');
       vSource.Add('    end;');
+      vSource.Add('');
       vSource.Add('  finally');
       vSource.Add('    vDataSet.Free;');
       vSource.Add('  end;');
@@ -395,40 +443,40 @@ function TSourceBuilder.DatabaseTypeToProviderParamType(const AField: IField): s
 begin
   Result := 'SetStringParam';
 
-  if AField.FieldType.Equals('CHAR') then
+  if UpperCase(AField.FieldType).Equals('CHAR') then
     Result := 'SetStringParam';
 
-  if AField.FieldType.Equals('VARCHAR') then
+  if UpperCase(AField.FieldType).Equals('VARCHAR') then
     Result := 'SetStringParam';
 
-  if AField.FieldType.Equals('INTEGER') then
+  if UpperCase(AField.FieldType).Equals('INTEGER') then
     Result := 'SetIntegerParam';
 
-  if AField.FieldType.Equals('SMALLINT') then
+  if UpperCase(AField.FieldType).Equals('SMALLINT') then
     Result := 'SetIntegerParam';
 
-  if AField.FieldType.Equals('TIMESTAMP') then
+  if UpperCase(AField.FieldType).Equals('TIMESTAMP') then
     Result := 'SetDateTimeParam';
 
-  if AField.FieldType.Equals('DATE') then
+  if UpperCase(AField.FieldType).Equals('DATE') then
     Result := 'SetDateParam';
 
-  if AField.FieldType.Equals('TIME') then
+  if UpperCase(AField.FieldType).Equals('TIME') then
     Result := 'SetTimeParam';
 
-  if AField.FieldType.Equals('NUMERIC') then
+  if UpperCase(AField.FieldType).Equals('NUMERIC') then
     Result := 'SetFloatParam';
 
-  if AField.FieldType.Equals('DECIMAL') then
+  if UpperCase(AField.FieldType).Equals('DECIMAL') then
     Result := 'SetFloatParam';
 
-  if AField.FieldType.Equals('DOUBLE PRECISION') then
+  if UpperCase(AField.FieldType).Equals('DOUBLE PRECISION') then
     Result := 'SetFloatParam';
 
-  if AField.FieldType.Equals('BLOB SUB_TYPE 0') then
+  if UpperCase(AField.FieldType).Equals('BLOB SUB_TYPE 0') then
     Result := 'SetMemoryStreamParam';
 
-  if AField.FieldType.Equals('BLOB SUB_TYPE 1') then
+  if UpperCase(AField.FieldType).Equals('BLOB SUB_TYPE 1') then
     Result := 'SetStringParam';
 end;
 

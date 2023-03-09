@@ -11,6 +11,7 @@ object MainView: TMainView
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  WindowState = wsMaximized
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   PixelsPerInch = 96
@@ -40,8 +41,6 @@ object MainView: TMainView
     Align = alLeft
     BevelOuter = bvNone
     TabOrder = 1
-    ExplicitLeft = 3
-    ExplicitTop = 44
     object spl3: TSplitter
       Left = 0
       Top = 220
@@ -81,10 +80,6 @@ object MainView: TMainView
       Align = alClient
       ItemHeight = 13
       TabOrder = 2
-      ExplicitLeft = 231
-      ExplicitTop = 44
-      ExplicitWidth = 202
-      ExplicitHeight = 365
     end
   end
   object pnlHeader: TPanel
@@ -115,8 +110,6 @@ object MainView: TMainView
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 3
-    ExplicitLeft = 439
-    ExplicitWidth = 584
     object edtSource: TSynEdit
       AlignWithMargins = True
       Left = 3
@@ -147,7 +140,6 @@ object MainView: TMainView
         'edtSource')
       WantTabs = True
       FontSmoothing = fsmNone
-      ExplicitWidth = 578
     end
     object pnlSourceToolbar: TPanel
       Left = 0
@@ -157,7 +149,6 @@ object MainView: TMainView
       Align = alTop
       BevelOuter = bvNone
       TabOrder = 1
-      ExplicitWidth = 584
       object btnSourceGenerator: TButton
         AlignWithMargins = True
         Left = 3
