@@ -20,13 +20,12 @@ type
     pnlTables: TPanel;
     srchTable: TSearchBox;
     pnlSource: TPanel;
-    pnlSourceToolbar: TPanel;
-    btnSourceGenerator: TButton;
     aclSource: TActionList;
     acnSourceGenerate: TAction;
-    cbbClassType: TComboBox;
     spl3: TSplitter;
     lstFields: TListBox;
+    cbbClassType: TComboBox;
+    btnSourceGenerator: TButton;
     procedure btnFillTablesClick(Sender: TObject);
     procedure lstTablesDblClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);

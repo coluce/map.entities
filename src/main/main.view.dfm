@@ -90,6 +90,8 @@ object MainView: TMainView
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 2
+    ExplicitLeft = -3
+    ExplicitTop = -3
     object btnFillTables: TButton
       AlignWithMargins = True
       Left = 3
@@ -100,6 +102,36 @@ object MainView: TMainView
       Caption = 'btnFillTables'
       TabOrder = 0
       OnClick = btnFillTablesClick
+    end
+    object cbbClassType: TComboBox
+      AlignWithMargins = True
+      Left = 794
+      Top = 10
+      Width = 145
+      Height = 21
+      Margins.Top = 10
+      Align = alRight
+      Style = csDropDownList
+      ItemIndex = 0
+      TabOrder = 1
+      Text = 'Main'
+      Items.Strings = (
+        'Main'
+        'Entity'
+        'Dao')
+      ExplicitLeft = 619
+      ExplicitTop = 0
+    end
+    object btnSourceGenerator: TButton
+      AlignWithMargins = True
+      Left = 945
+      Top = 3
+      Width = 75
+      Height = 35
+      Action = acnSourceGenerate
+      Align = alRight
+      TabOrder = 2
+      ExplicitLeft = 930
     end
   end
   object pnlSource: TPanel
@@ -113,9 +145,9 @@ object MainView: TMainView
     object edtSource: TSynEdit
       AlignWithMargins = True
       Left = 3
-      Top = 44
+      Top = 3
       Width = 789
-      Height = 324
+      Height = 365
       Align = alClient
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
@@ -140,39 +172,8 @@ object MainView: TMainView
         'edtSource')
       WantTabs = True
       FontSmoothing = fsmNone
-    end
-    object pnlSourceToolbar: TPanel
-      Left = 0
-      Top = 0
-      Width = 795
-      Height = 41
-      Align = alTop
-      BevelOuter = bvNone
-      TabOrder = 1
-      object btnSourceGenerator: TButton
-        AlignWithMargins = True
-        Left = 3
-        Top = 3
-        Width = 75
-        Height = 35
-        Action = acnSourceGenerate
-        Align = alLeft
-        TabOrder = 0
-      end
-      object cbbClassType: TComboBox
-        Left = 88
-        Top = 10
-        Width = 145
-        Height = 21
-        Style = csDropDownList
-        ItemIndex = 0
-        TabOrder = 1
-        Text = 'Main'
-        Items.Strings = (
-          'Main'
-          'Entity'
-          'Dao')
-      end
+      ExplicitTop = 44
+      ExplicitHeight = 324
     end
   end
   object SynPasSyn1: TSynPasSyn
